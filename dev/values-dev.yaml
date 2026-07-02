@@ -1,4 +1,5 @@
 # Container image configuration
+namespace: testing-postgres
 image:
   registry: docker.io
   repository: bitnamilegacy/postgresql
