@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: postgresql-environments  
+  namespace: argocd
+spec:
+  generators:  
+  - list:
+      elements:
+      - env: dev  
+        namespace: dev
+      - env: staging
+        namespace: staging
+      - env: prod
+        namespace: prod
+
+template:  
+    metadata:
+      name: 'postgresql-{{env}}'  
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:nsalexamy/service-foundry-argocd.git
+        targetRevision: main
+        path: 'demo-apps/postgresql-gitops/{{env}}'  
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'  
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: false
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
